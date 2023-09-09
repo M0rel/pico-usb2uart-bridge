@@ -2,8 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "bsp/board.h"
+#include "board.h"
 #include "tusb.h"
+
+#include "pico/time.h"
+static inline uint32_t board_millis(void) {
+  return to_ms_since_boot(get_absolute_time());
+}
 
 void led_blinking_task(void)
 {
@@ -35,6 +40,7 @@ int main(void)
     tuh_task();
 
     led_blinking_task();
+    cdc_app_task();
   }
 
   return 0;
