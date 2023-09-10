@@ -89,5 +89,7 @@ target_include_directories(pico-usb2uart-bridge PUBLIC
         ./
         )
 
+pico_enable_stdio_uart(pico-usb2uart-bridge 0)
+
 pico_add_extra_outputs(pico-usb2uart-bridge)
 
