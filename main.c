@@ -6,6 +6,17 @@
 #include "tusb.h"
 
 #include "pico/time.h"
+#include "pico/stdlib.h"
+
+#include "hardware/uart.h"
+
+#define BAUD_RATE       115200
+#define UART0_TX_PIN    0
+#define UART0_RX_PIN    1
+
+#define UART1_TX_PIN    4
+#define UART1_RX_PIN    5
+
 static inline uint32_t board_millis(void) {
   return to_ms_since_boot(get_absolute_time());
 }
@@ -34,6 +45,14 @@ int main(void)
 
   // init host stack on configured roothub port
   tuh_init(BOARD_TUH_RHPORT);
+
+  uart_init(uart0, BAUD_RATE);
+  gpio_set_function(UART0_TX_PIN, GPIO_FUNC_UART);
+  gpio_set_function(UART0_RX_PIN, GPIO_FUNC_UART);
+
+  uart_init(uart1, BAUD_RATE);
+  gpio_set_function(UART1_TX_PIN, GPIO_FUNC_UART);
+  gpio_set_function(UART1_RX_PIN, GPIO_FUNC_UART);
 
   while (1)
   {
