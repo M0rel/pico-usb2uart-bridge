@@ -27,6 +27,8 @@
 #include "tusb.h"
 #include "bsp/board_api.h"
 
+#include "hardware/uart.h"
+
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
@@ -71,26 +73,50 @@ void cdc_app_task(void)
     }
   }
 }
+#define UART0_CDC_DEV_VID 1111
+#define UART0_CDC_DEV_PID 22222
+
+#define UART1_CDC_DEV_VID 1155
+#define UART1_CDC_DEV_PID 22336
+
+#define BUFFER_SIZE     65
 
 // Invoked when received new data
 void tuh_cdc_rx_cb(uint8_t idx)
 {
-  uint8_t buf[64+1]; // +1 for extra null character
+  uint16_t vid = 0;
+  uint16_t pid = 0;
+
+  tuh_itf_info_t itf_info = { 0 };
+  tuh_cdc_itf_get_info(idx, &itf_info);
+
+  tuh_vid_pid_get(itf_info.daddr, &vid, &pid);
+  uint8_t buf[BUFFER_SIZE]; // +1 for extra null character
   uint32_t const bufsize = sizeof(buf)-1;
 
   // forward cdc interfaces -> console
   uint32_t count = tuh_cdc_read(idx, buf, bufsize);
   buf[count] = 0;
 
-  printf((char*) buf);
+  if (UART0_CDC_DEV_VID == vid && UART0_CDC_DEV_PID == pid) {
+    uart_puts(uart0, buf);
+  } else if (UART1_CDC_DEV_VID == vid && UART1_CDC_DEV_PID == pid) {
+    uart_puts(uart1, buf);
+  }
 }
 
 void tuh_cdc_mount_cb(uint8_t idx)
 {
+  uint16_t vid = 0;
+  uint16_t pid = 0;
+
   tuh_itf_info_t itf_info = { 0 };
   tuh_cdc_itf_get_info(idx, &itf_info);
 
+  tuh_vid_pid_get(itf_info.daddr, &vid, &pid);
+
   printf("CDC Interface is mounted: address = %u, itf_num = %u\r\n", itf_info.daddr, itf_info.desc.bInterfaceNumber);
+  printf("VID = %u, PID = %u for a interface address = %u\r\n", vid, pid, itf_info.daddr);
 
 #ifdef CFG_TUH_CDC_LINE_CODING_ON_ENUM
   // CFG_TUH_CDC_LINE_CODING_ON_ENUM must be defined for line coding is set by tinyusb in enumeration
