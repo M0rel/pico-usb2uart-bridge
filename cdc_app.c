@@ -73,8 +73,6 @@ void cdc_app_task(void)
     }
   }
 }
-#define CDC_DEV_VID 6457
-#define CDC_DEV_PID 6469
 
 #define CDC_INTERFACE_NUMBER_FOR_UART0  1
 #define CDC_INTERFACE_NUMBER_FOR_UART1  3
@@ -98,10 +96,6 @@ void tuh_cdc_rx_cb(uint8_t idx)
   // forward cdc interfaces -> console
   uint32_t count = tuh_cdc_read(idx, buf, bufsize);
   buf[count] = 0;
-
-  if (CDC_DEV_VID != vid && CDC_DEV_PID != pid) {
-    return;
-  }
 
   itf_num = itf_info.desc.bInterfaceNumber;
 
