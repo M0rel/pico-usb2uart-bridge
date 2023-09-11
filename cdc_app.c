@@ -73,11 +73,11 @@ void cdc_app_task(void)
     }
   }
 }
-#define UART0_CDC_DEV_VID 1111
-#define UART0_CDC_DEV_PID 22222
+#define CDC_DEV_VID 6457
+#define CDC_DEV_PID 6469
 
-#define UART1_CDC_DEV_VID 1155
-#define UART1_CDC_DEV_PID 22336
+#define CDC_INTERFACE_NUMBER_FOR_UART0  1
+#define CDC_INTERFACE_NUMBER_FOR_UART1  3
 
 #define BUFFER_SIZE     65
 
@@ -86,6 +86,7 @@ void tuh_cdc_rx_cb(uint8_t idx)
 {
   uint16_t vid = 0;
   uint16_t pid = 0;
+  uint16_t itf_num = 0;
 
   tuh_itf_info_t itf_info = { 0 };
   tuh_cdc_itf_get_info(idx, &itf_info);
@@ -98,9 +99,15 @@ void tuh_cdc_rx_cb(uint8_t idx)
   uint32_t count = tuh_cdc_read(idx, buf, bufsize);
   buf[count] = 0;
 
-  if (UART0_CDC_DEV_VID == vid && UART0_CDC_DEV_PID == pid) {
+  if (CDC_DEV_VID != vid && CDC_DEV_PID != pid) {
+    return;
+  }
+
+  itf_num = itf_info.desc.bInterfaceNumber;
+
+  if (CDC_INTERFACE_NUMBER_FOR_UART0 == itf_num) {
     uart_puts(uart0, buf);
-  } else if (UART1_CDC_DEV_VID == vid && UART1_CDC_DEV_PID == pid) {
+  } else if (CDC_INTERFACE_NUMBER_FOR_UART1 == itf_num) {
     uart_puts(uart1, buf);
   }
 }
