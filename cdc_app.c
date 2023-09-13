@@ -33,6 +33,8 @@
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
+#define CDC_INTERFACE_NUMBER_FOR_UART0  1
+#define CDC_INTERFACE_NUMBER_FOR_UART1  3
 
 //------------- IMPLEMENTATION -------------//
 
@@ -82,14 +84,9 @@ void cdc_app_task(void)
 // Invoked when received new data
 void tuh_cdc_rx_cb(uint8_t idx)
 {
-  uint16_t vid = 0;
-  uint16_t pid = 0;
-  uint16_t itf_num = 0;
-
   tuh_itf_info_t itf_info = { 0 };
   tuh_cdc_itf_get_info(idx, &itf_info);
 
-  tuh_vid_pid_get(itf_info.daddr, &vid, &pid);
   uint8_t buf[BUFFER_SIZE]; // +1 for extra null character
   uint32_t const bufsize = sizeof(buf)-1;
 
@@ -97,27 +94,30 @@ void tuh_cdc_rx_cb(uint8_t idx)
   uint32_t count = tuh_cdc_read(idx, buf, bufsize);
   buf[count] = 0;
 
-  itf_num = itf_info.desc.bInterfaceNumber;
-
-  if (CDC_INTERFACE_NUMBER_FOR_UART0 == itf_num) {
+  if (cdc_dev_idx_for_uart0 == idx) {
     uart_puts(uart0, buf);
-  } else if (CDC_INTERFACE_NUMBER_FOR_UART1 == itf_num) {
+  } else if (cdc_dev_idx_for_uart1 == idx) {
     uart_puts(uart1, buf);
   }
 }
 
 void tuh_cdc_mount_cb(uint8_t idx)
 {
-  uint16_t vid = 0;
-  uint16_t pid = 0;
+  uint16_t itf_num = 0;
 
   tuh_itf_info_t itf_info = { 0 };
   tuh_cdc_itf_get_info(idx, &itf_info);
 
-  tuh_vid_pid_get(itf_info.daddr, &vid, &pid);
+  itf_num = itf_info.desc.bInterfaceNumber;
 
-  printf("CDC Interface is mounted: address = %u, itf_num = %u\r\n", itf_info.daddr, itf_info.desc.bInterfaceNumber);
-  printf("VID = %u, PID = %u for a interface address = %u\r\n", vid, pid, itf_info.daddr);
+  printf("CDC Interface is mounted: address = %u, itf_num = %u\r\n",
+         itf_info.daddr, itf_num);
+
+  if (CDC_INTERFACE_NUMBER_FOR_UART0 == itf_num) {
+    cdc_dev_idx_for_uart0 = idx;
+  } else if (CDC_INTERFACE_NUMBER_FOR_UART1 == itf_num) {
+    cdc_dev_idx_for_uart1 = idx;
+  }
 
 #ifdef CFG_TUH_CDC_LINE_CODING_ON_ENUM
   // CFG_TUH_CDC_LINE_CODING_ON_ENUM must be defined for line coding is set by tinyusb in enumeration
