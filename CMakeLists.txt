@@ -80,6 +80,7 @@ add_executable(pico-usb2uart-bridge
 
 target_link_libraries(pico-usb2uart-bridge PUBLIC
         pico_stdlib
+        hardware_uart
         tinyusb_bsp_cust
         tinyusb_common_base_cust
         tinyusb_device_base_cust
