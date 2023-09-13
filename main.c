@@ -21,6 +21,9 @@ static inline uint32_t board_millis(void) {
   return to_ms_since_boot(get_absolute_time());
 }
 
+extern void on_uart0_rx();
+extern void on_uart1_rx();
+
 void led_blinking_task(void)
 {
   const uint32_t interval_ms = 1000;
@@ -36,6 +39,28 @@ void led_blinking_task(void)
   led_state = 1 - led_state; // toggle
 }
 
+void init_pi_uarts()
+{
+  uart_init(uart0, BAUD_RATE);
+  gpio_set_function(UART0_TX_PIN, GPIO_FUNC_UART);
+  gpio_set_function(UART0_RX_PIN, GPIO_FUNC_UART);
+
+  irq_set_exclusive_handler(UART0_IRQ, on_uart0_rx);
+  irq_set_enabled(UART0_IRQ, true);
+
+  // Now enable the UART to send interrupts - RX only
+  uart_set_irq_enables(uart0, true, false);
+
+  uart_init(uart1, BAUD_RATE);
+  gpio_set_function(UART1_TX_PIN, GPIO_FUNC_UART);
+  gpio_set_function(UART1_RX_PIN, GPIO_FUNC_UART);
+
+  irq_set_exclusive_handler(UART1_IRQ, on_uart1_rx);
+  irq_set_enabled(UART1_IRQ, true);
+
+  // Now enable the UART to send interrupts - RX only
+  uart_set_irq_enables(uart1, true, false);
+}
 
 int main(void)
 {
@@ -43,16 +68,9 @@ int main(void)
 
   printf("TinyUSB Host CDC MSC HID Example\r\n");
 
-  // init host stack on configured roothub port
   tuh_init(BOARD_TUH_RHPORT);
 
-  uart_init(uart0, BAUD_RATE);
-  gpio_set_function(UART0_TX_PIN, GPIO_FUNC_UART);
-  gpio_set_function(UART0_RX_PIN, GPIO_FUNC_UART);
-
-  uart_init(uart1, BAUD_RATE);
-  gpio_set_function(UART1_TX_PIN, GPIO_FUNC_UART);
-  gpio_set_function(UART1_RX_PIN, GPIO_FUNC_UART);
+  init_pi_uarts();
 
   while (1)
   {
