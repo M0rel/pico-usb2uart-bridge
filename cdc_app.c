@@ -36,50 +36,35 @@
 #define CDC_INTERFACE_NUMBER_FOR_UART0  1
 #define CDC_INTERFACE_NUMBER_FOR_UART1  3
 
-//------------- IMPLEMENTATION -------------//
-
-size_t get_console_inputs(uint8_t* buf, size_t bufsize)
-{
-  size_t count = 0;
-  while (count < bufsize)
-  {
-    int ch = board_getchar();
-    if ( ch <= 0 ) break;
-
-    buf[count] = (uint8_t) ch;
-    count++;
-  }
-
-  return count;
-}
-
-void cdc_app_task(void)
-{
-  uint8_t buf[64+1]; // +1 for extra null character
-  uint32_t const bufsize = sizeof(buf)-1;
-
-  uint32_t count = get_console_inputs(buf, bufsize);
-  buf[count] = 0;
-
-  // loop over all mounted interfaces
-  for(uint8_t idx=0; idx<CFG_TUH_CDC; idx++)
-  {
-    if ( tuh_cdc_mounted(idx) )
-    {
-      // console --> cdc interfaces
-      if (count)
-      {
-        tuh_cdc_write(idx, buf, count);
-        tuh_cdc_write_flush(idx);
-      }
-    }
-  }
-}
-
-#define CDC_INTERFACE_NUMBER_FOR_UART0  1
-#define CDC_INTERFACE_NUMBER_FOR_UART1  3
-
 #define BUFFER_SIZE     65
+
+uint8_t cdc_dev_idx_for_uart0 = 0;
+uint8_t cdc_dev_idx_for_uart1 = 0;
+
+void write_uart2cdc(uart_inst_t *uart, uint8_t idx)
+{
+  uint8_t i = 0;
+  uint8_t buf[BUFFER_SIZE];
+
+  while (uart_is_readable(uart) && i < 64) {
+    uint8_t ch = uart_getc(uart);
+    buf[i] = ch;
+    i++;
+  }
+
+  tuh_cdc_write(idx, buf, i);
+  tuh_cdc_write_flush(idx);
+}
+
+void on_uart0_rx()
+{
+  write_uart2cdc(uart0, cdc_dev_idx_for_uart0);
+}
+
+void on_uart1_rx()
+{
+  write_uart2cdc(uart1, cdc_dev_idx_for_uart1);
+}
 
 // Invoked when received new data
 void tuh_cdc_rx_cb(uint8_t idx)
