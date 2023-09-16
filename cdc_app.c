@@ -77,12 +77,12 @@ void tuh_cdc_rx_cb(uint8_t idx)
 
   // forward cdc interfaces -> console
   uint32_t count = tuh_cdc_read(idx, buf, bufsize);
-  buf[count] = 0;
+  buf[count] = '\0';
 
   if (cdc_dev_idx_for_uart0 == idx) {
-    uart_puts(uart0, buf);
+    uart_write_blocking(uart0, buf, count);
   } else if (cdc_dev_idx_for_uart1 == idx) {
-    uart_puts(uart1, buf);
+    uart_write_blocking(uart1, buf, count);
   }
 }
 
