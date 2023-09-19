@@ -45,21 +45,9 @@ void init_pi_uarts()
   gpio_set_function(UART0_TX_PIN, GPIO_FUNC_UART);
   gpio_set_function(UART0_RX_PIN, GPIO_FUNC_UART);
 
-  irq_set_exclusive_handler(UART0_IRQ, on_uart0_rx);
-  irq_set_enabled(UART0_IRQ, true);
-
-  // Now enable the UART to send interrupts - RX only
-  uart_set_irq_enables(uart0, true, false);
-
   uart_init(uart1, BAUD_RATE);
   gpio_set_function(UART1_TX_PIN, GPIO_FUNC_UART);
   gpio_set_function(UART1_RX_PIN, GPIO_FUNC_UART);
-
-  irq_set_exclusive_handler(UART1_IRQ, on_uart1_rx);
-  irq_set_enabled(UART1_IRQ, true);
-
-  // Now enable the UART to send interrupts - RX only
-  uart_set_irq_enables(uart1, true, false);
 }
 
 int main(void)
