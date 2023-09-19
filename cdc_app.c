@@ -56,16 +56,6 @@ void write_uart2cdc(uart_inst_t *uart, uint8_t idx)
   tuh_cdc_write_flush(idx);
 }
 
-void on_uart0_rx()
-{
-  write_uart2cdc(uart0, cdc_dev_idx_for_uart0);
-}
-
-void on_uart1_rx()
-{
-  write_uart2cdc(uart1, cdc_dev_idx_for_uart1);
-}
-
 // Invoked when received new data
 void tuh_cdc_rx_cb(uint8_t idx)
 {
