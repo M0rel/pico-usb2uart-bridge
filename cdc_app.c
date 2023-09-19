@@ -46,7 +46,7 @@ void write_uart2cdc(uart_inst_t *uart, uint8_t idx)
   uint8_t i = 0;
   uint8_t buf[BUFFER_SIZE];
 
-  while (uart_is_readable(uart) && i < 64) {
+  while (uart_is_readable(uart) && i < BUFFER_SIZE - 1) {
     uint8_t ch = uart_getc(uart);
     buf[i] = ch;
     i++;
