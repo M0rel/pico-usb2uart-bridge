@@ -65,6 +65,7 @@ int main(void)
     tuh_task();
 
     led_blinking_task();
+    cdc_task();
   }
 
   return 0;
